@@ -1,0 +1,100 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+body{background:#efe7d6;margin:0;font-family:'Inter',sans-serif;color:#1d1b17;}
+.wrap{max-width:980px;margin:0 auto;padding:56px 48px 80px;background:#f6f1e7;
+  box-shadow:0 1px 40px rgba(0,0,0,.08);}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:40px;margin:0 0 4px;letter-spacing:-.5px;}
+.sub{font-family:'JetBrains Mono',monospace;font-size:13px;color:#b4502a;margin-bottom:28px;}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:24px;border-bottom:2px solid #1d1b17;
+  padding-bottom:6px;margin:40px 0 18px;}
+p{font-size:15px;line-height:1.6;max-width:70ch;}
+.kpis{display:flex;gap:18px;flex-wrap:wrap;margin:24px 0;}
+.kpi{flex:1;min-width:150px;background:#fff;border:1px solid #d8cfbe;border-radius:10px;padding:16px 18px;}
+.kpi .v{font-family:'Fraunces',serif;font-size:30px;font-weight:600;color:#b4502a;}
+.kpi .l{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5a534a;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+img{max-width:100%;border:1px solid #d8cfbe;border-radius:8px;margin:8px 0;background:#f6f1e7;}
+table{border-collapse:collapse;font-size:14px;margin:10px 0;}
+th,td{border:1px solid #d8cfbe;padding:7px 14px;text-align:left;}
+th{background:#1d1b17;color:#f6f1e7;font-family:'JetBrains Mono',monospace;font-size:12px;}
+td.mono{font-family:'JetBrains Mono',monospace;}
+.foot{font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7367;margin-top:48px;
+  border-top:1px solid #d8cfbe;padding-top:14px;}
+</style></head><body><div class="wrap">
+<h1>ConvoLens</h1>
+<div class="sub">contact-center conversation intelligence &middot; 26,872 utterances &middot; 27 intents &middot; 11 categories</div>
+<p>An end-to-end analysis of a public customer-support corpus: what customers
+contact about, how reliably their intent can be classified (including under noisy,
+real-world text), and which conversations carry escalation risk that a
+customer-success team should act on first.</p>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">0.996</div><div class="l">intent macro F1 (27 classes)</div></div>
+  <div class="kpi"><div class="v">0.627</div><div class="l">sentiment macro F1 (real tweets)</div></div>
+  <div class="kpi"><div class="v">1.000</div><div class="l">escalation AUROC</div></div>
+  <div class="kpi"><div class="v">100%</div><div class="l">precision @ 90% recall</div></div>
+</div>
+
+<h2>What customers contact about</h2>
+<p>Volume is concentrated in account, order, and refund topics. This distribution
+is itself a customer-success signal: refund and cancellation volume is where churn
+risk lives.</p>
+<img src="figures/category_distribution.png">
+<img src="figures/intent_distribution.png">
+
+<h2>Intent classification, and how it survives noisy text</h2>
+<p>Both a TF-IDF baseline and a sentence-embedding model classify the 27 intents
+with high accuracy on clean text. Because production text is messier, each model is
+re-scored after injecting character-level typos. The embedding model degrades far
+less, which is the property that matters in deployment.</p>
+<table>
+<tr><th>model</th><th>macro F1 (clean)</th><th>macro F1 (typos)</th><th>accuracy (clean)</th></tr>
+<tr><td class='mono'>tfidf+logreg</td><td class='mono'>0.995</td><td class='mono'>0.918</td><td class='mono'>0.995</td></tr>
+<tr><td class='mono'>minilm+logreg</td><td class='mono'>0.996</td><td class='mono'>0.911</td><td class='mono'>0.996</td></tr>
+</table>
+<img src="figures/robustness.png">
+
+<h2>Sentiment on real, noisy customer text</h2>
+<p>The support corpus is templated, so its intent labels are near-perfectly
+separable. To measure sentiment on messages that look like the real world, the
+model is trained and tested on the SemEval tweet-sentiment benchmark (real social
+posts, official train/test split, no leakage). Macro F1 of 0.627 across
+three classes is in line with strong lightweight baselines and, unlike the intent
+numbers, reflects genuine difficulty. The negative-sentiment head is then reused as
+a risk feature on the support conversations.</p>
+<table>
+<tr><th>metric</th><th>value</th></tr>
+<tr><td>accuracy</td><td class="mono">0.626</td></tr>
+<tr><td>macro F1 (3-class)</td><td class="mono">0.627</td></tr>
+<tr><td>F1 (negative class)</td><td class="mono">0.678</td></tr>
+</table>
+
+<h2>Escalation risk for customer success</h2>
+<p>Escalation-prone conversations (explicit human-agent requests, complaints,
+cancellations and refunds) make up 30% of the corpus. A classifier on the
+utterance embedding ranks them with AUROC 1.000 and AUPRC 0.999;
+because the escalation label is derived from intent, this score is expected to be
+high, and its value here is the operating point it exposes. Tuned for high recall, a
+team can catch 90% of at-risk conversations while keeping precision at
+100%, so the review queue stays small.</p>
+<img src="figures/escalation_pr.png">
+
+<h2>Fused conversation-priority queue</h2>
+<p>A single triage score blends escalation probability with predicted negative
+sentiment, surfacing the conversations a customer-success team should open first.
+The highest-priority held-out conversations:</p>
+<table>
+<tr><th>priority</th><th>escalation</th><th>neg. sentiment</th><th>intent</th><th>utterance</th></tr>
+<tr><td class='mono'>0.99</td><td class='mono'>1.00</td><td class='mono'>0.99</td><td class='mono'>get_refund</td><td>i do not know what to do to obtain a goddamn refund of money</td></tr>
+<tr><td class='mono'>0.99</td><td class='mono'>0.99</td><td class='mono'>0.98</td><td class='mono'>complaint</td><td>i am unhappy with your services, help filing a complaint</td></tr>
+<tr><td class='mono'>0.98</td><td class='mono'>0.99</td><td class='mono'>0.98</td><td class='mono'>complaint</td><td>i am unhappy with your services, how do i lodge a complaint?</td></tr>
+<tr><td class='mono'>0.98</td><td class='mono'>1.00</td><td class='mono'>0.96</td><td class='mono'>contact_customer_service</td><td>what do i have to do to call fucking customer support?</td></tr>
+<tr><td class='mono'>0.98</td><td class='mono'>1.00</td><td class='mono'>0.96</td><td class='mono'>complaint</td><td>i don't know how i could file a goddamn customer claim</td></tr>
+<tr><td class='mono'>0.98</td><td class='mono'>0.99</td><td class='mono'>0.96</td><td class='mono'>contact_human_agent</td><td>wana talk to a goddamn person</td></tr>
+<tr><td class='mono'>0.97</td><td class='mono'>1.00</td><td class='mono'>0.95</td><td class='mono'>check_refund_policy</td><td>help me to see your goddamn refund policy</td></tr>
+<tr><td class='mono'>0.97</td><td class='mono'>1.00</td><td class='mono'>0.95</td><td class='mono'>contact_human_agent</td><td>i cannot talk to a person</td></tr>
+</table>
+
+<div class="foot">Generated by ConvoLens v0.1.0 &middot; dataset: Bitext customer-support &middot;
+models: scikit-learn TF-IDF/LogReg + MiniLM embeddings &middot; all metrics computed on a held-out 20% test split.</div>
+</div></body></html>

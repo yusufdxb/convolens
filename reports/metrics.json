@@ -1,0 +1,43 @@
+{
+  "n_rows": 26872,
+  "n_intents": 27,
+  "n_categories": 11,
+  "escalation_base_rate": 0.2971,
+  "intent": [
+    {
+      "model": "tfidf+logreg",
+      "accuracy": 0.9952,
+      "macro_f1": 0.9952,
+      "macro_f1_perturbed": 0.9183,
+      "accuracy_perturbed": 0.9176,
+      "n_test": 5375,
+      "n_classes": 27
+    },
+    {
+      "model": "minilm+logreg",
+      "accuracy": 0.9961,
+      "macro_f1": 0.9961,
+      "macro_f1_perturbed": 0.9106,
+      "accuracy_perturbed": 0.9094,
+      "n_test": 5375,
+      "n_classes": 27
+    }
+  ],
+  "escalation": {
+    "auroc": 0.9996,
+    "auprc": 0.9992,
+    "base_rate": 0.2971,
+    "target_recall": 0.9,
+    "precision_at_target": 1.0,
+    "n_test": 5375
+  },
+  "sentiment": {
+    "dataset": "tweet_eval/sentiment",
+    "accuracy": 0.6256,
+    "macro_f1": 0.6269,
+    "f1_negative": 0.6782,
+    "n_train": 45615,
+    "n_test": 12284
+  },
+  "runtime_sec": 31.3
+}
