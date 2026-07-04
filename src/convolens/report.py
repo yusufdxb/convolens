@@ -10,26 +10,16 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import physx_style as _physx_style  # editorial-print theme
+_physx_style.apply()
 import numpy as np
 
-INK = "#1d1b17"
-RUST = "#b4502a"
-CREAM = "#f6f1e7"
-GRID = "#d8cfbe"
-
-plt.rcParams.update({
-    "figure.facecolor": CREAM,
-    "axes.facecolor": CREAM,
-    "axes.edgecolor": INK,
-    "axes.labelcolor": INK,
-    "text.color": INK,
-    "xtick.color": INK,
-    "ytick.color": INK,
-    "font.size": 11,
-    "axes.grid": True,
-    "grid.color": GRID,
-    "grid.linewidth": 0.6,
-})
+# physx-newton-bench palette: blue primary, green secondary, ink for references.
+# Canvas/grid/frame come from physx_style (applied above); no local override.
+INK = _physx_style.INK
+BLUE = _physx_style.COLORS["physx"]
+GREEN = _physx_style.COLORS["newton"]
+RUST = BLUE  # legacy name kept: was the single accent, now the primary series
 
 
 def fig_category_distribution(df, out: str) -> None:
@@ -46,7 +36,7 @@ def fig_category_distribution(df, out: str) -> None:
 def fig_intent_distribution(df, out: str) -> None:
     counts = df["intent"].value_counts()
     fig, ax = plt.subplots(figsize=(7.2, 6.0))
-    ax.barh(counts.index[::-1], counts.values[::-1], color=INK)
+    ax.barh(counts.index[::-1], counts.values[::-1], color=BLUE)
     ax.set_title("Conversations by intent (27 classes)", loc="left", fontweight="bold")
     ax.set_xlabel("utterances")
     fig.tight_layout()
@@ -61,8 +51,8 @@ def fig_robustness(intent_results, out: str) -> None:
     x = np.arange(len(models))
     w = 0.38
     fig, ax = plt.subplots(figsize=(7.2, 4.0))
-    ax.bar(x - w / 2, clean, w, label="clean text", color=INK)
-    ax.bar(x + w / 2, pert, w, label="with typos (6%)", color=RUST)
+    ax.bar(x - w / 2, clean, w, label="clean text", color=BLUE)
+    ax.bar(x + w / 2, pert, w, label="with typos (6%)", color=GREEN)
     ax.set_xticks(x)
     ax.set_xticklabels(models)
     ax.set_ylim(0, 1.0)
