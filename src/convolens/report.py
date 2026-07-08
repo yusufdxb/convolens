@@ -10,15 +10,12 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import physx_style as _physx_style  # editorial-print theme
-_physx_style.apply()
 import numpy as np
 
-# physx-newton-bench palette: blue primary, green secondary, ink for references.
-# Canvas/grid/frame come from physx_style (applied above); no local override.
-INK = _physx_style.INK
-BLUE = _physx_style.COLORS["physx"]
-GREEN = _physx_style.COLORS["newton"]
+# Blue primary, green secondary, ink for reference lines.
+INK = "#0b0b0b"
+BLUE = "#2a78d6"
+GREEN = "#1baf7a"
 RUST = BLUE  # legacy name kept: was the single accent, now the primary series
 
 
